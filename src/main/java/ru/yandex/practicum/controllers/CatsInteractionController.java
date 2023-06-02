@@ -1,6 +1,7 @@
 package ru.yandex.practicum.controllers;
 
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.exception.IncorrectCountException;
 
 import java.util.Map;
 
@@ -17,6 +18,11 @@ public class CatsInteractionController {
 
     @GetMapping("/pet")
     public Map<String, String> pet(@RequestParam(required = false) final Integer count) {
+        if (count == null) {
+            throw new IncorrectCountException("Параметр count равен null.");
+        } else if (count <= 0) {
+            throw new IncorrectCountException("Передан отрицательный параметр count.");
+        }
         happiness += count;
         return Map.of("talk", "Муррр. ".repeat(count));
     }
@@ -28,8 +34,10 @@ public class CatsInteractionController {
 
     @ExceptionHandler
 // отлавливаем исключение IllegalArgumentException
-    public Map<String, String> handleNegativeCount(final IllegalArgumentException e) {
+    public Map<String, String> handleIncorrectCount(final IncorrectCountException e) {
         // возвращаем сообщение об ошибке
-        return Map.of("error", "Передан отрицательный параметр count.");
+        return Map.of("error", "Ошибка с параметром count.",
+                "errorMessage", e.getMessage()
+        );
     }
 }
